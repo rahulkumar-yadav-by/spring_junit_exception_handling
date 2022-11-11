@@ -1,6 +1,10 @@
 package com.spring.junit.exception.JunitExceptionHandlingProject.controller;
 
+
+import com.spring.junit.exception.JunitExceptionHandlingProject.exceptionHandling.EmployeeException;
 import com.spring.junit.exception.JunitExceptionHandlingProject.model.Employee;
+import com.spring.junit.exception.JunitExceptionHandlingProject.model.PayloadValidation;
+import com.spring.junit.exception.JunitExceptionHandlingProject.model.Response;
 import com.spring.junit.exception.JunitExceptionHandlingProject.service.EmployeeService;
 import com.spring.junit.exception.JunitExceptionHandlingProject.service.EmployeeServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +29,27 @@ public class EmployeeController {
     }
 
     @RequestMapping(value = "/get-employee-by-id/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") Long id){
-        Employee emp = service.getEmployeeById(id);
-        if(emp==null) return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") Long id) throws EmployeeException{
+//        Employee emp = service.getEmployeeById(id);
+//        if(emp==null) return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+//
+//        return new ResponseEntity<>(emp, HttpStatus.OK);
 
-        return new ResponseEntity<>(emp, HttpStatus.OK);
+        Employee employee = service.getEmployeeById(id);
+        if(employee==null || employee.getId()<=0){
+            throw new EmployeeException("EMPLOYEE DOESN'T EXISTS");
+        }
+
+        return new ResponseEntity<Employee>(service.getEmployeeById(id), HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/save-employee", method = RequestMethod.POST)
-    public ResponseEntity<Employee> saveEmployee(@RequestBody Employee employee){
-        return new ResponseEntity<>(service.saveEmployee(employee), HttpStatus.OK);
+    public ResponseEntity<Employee> saveEmployee(@RequestBody Employee payload) throws EmployeeException{
+
+        if(!PayloadValidation.createdPayloadValidation(payload)) throw new EmployeeException("PAYLOAD MALFORMED. ID MUST NOT BE DEFINED");
+
+        return new ResponseEntity<Employee>(service.saveEmployee(payload), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/save-all-employee", method = RequestMethod.POST)
@@ -43,8 +58,15 @@ public class EmployeeController {
     }
 
     @RequestMapping(value = "/delete-employee/{id}", method = RequestMethod.DELETE)
-    String removeEmployee(@PathVariable("id") Long id){
-        return service.removeEmployee(id);
+    public ResponseEntity<Response> removeEmployee(@PathVariable("id") Long id) throws EmployeeException{
+
+        Employee employee = service.getEmployeeById(id);
+        if(employee==null || employee.getId()<=0){
+            throw new EmployeeException("EMPLOYEE DOESN'T EXISTS");
+        }
+
+        service.removeEmployee(id);
+        return new ResponseEntity<Response>(new Response(HttpStatus.OK.value(), "SUCCESSFULLY DELETED EMPLOYEE"), HttpStatus.OK);
     }
 
 

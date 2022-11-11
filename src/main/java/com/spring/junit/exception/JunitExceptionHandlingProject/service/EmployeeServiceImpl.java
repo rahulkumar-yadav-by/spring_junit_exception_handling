@@ -1,5 +1,6 @@
 package com.spring.junit.exception.JunitExceptionHandlingProject.service;
 
+
 import com.spring.junit.exception.JunitExceptionHandlingProject.model.Employee;
 import com.spring.junit.exception.JunitExceptionHandlingProject.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,9 @@ public class EmployeeServiceImpl implements  EmployeeService{
     }
 
     @Override
-    public String removeEmployee(Long id) {
-        if(repository.existsById(id)) { repository.deleteById(id); return "Delete Successfully!"; }
-        return "Employee NOT FOUND";
+    public void removeEmployee(Long id) {
+//        if(repository.existsById(id)) { repository.deleteById(id); return "Delete Successfully!"; }
+//        return "Employee NOT FOUND";
+        repository.deleteById(id);
     }
 }
